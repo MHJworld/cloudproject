@@ -1,102 +1,89 @@
 import boto3
 
+ec2 = boto3.resource('ec2')
 client = boto3.client('ec2')
 
-print("Which one do you want to stop?\n")
-print("1: Master            2: Slave")
-Num = int(input())
+print('Available regions ....')
+available_region = client.describe_regions()
+for available_region in ec2.instances.all():
+    state = available_region.regions
+    print(state)
 
-if Num == 1:
-    response = client.stop_instances(
-        InstanceIds=[
-            'i-07e66349b31807962',
-        ],
-    )
-    print('Done!\n\n')
-elif Num == 2:
-    response = client.stop_instances(
-        InstanceIds=[
-            'i-0770e98d5789bd13a',
-        ],
-    )
-    print('Done!\n\n')
 
 
 def Main_menu(): #메인 메뉴 구성
-    print('-------------------------------------------------\n')
-    print('  1. list instance       2. available zones\n')
-    print('  3. start instance      4. available regions\n')
-    print('  5. stop instance       6. create instance\n')
-    print('  7. reboot instance     8. list images\n')
-    print('                         99. quit\n')
-    print('-------------------------------------------------')
+    print('-----------------------------------------------------------')
+    print('    1. list instance               2. available zones')
+    print('    3. start instance              4. available regions')
+    print('    5. stop instance               6. create instance')
+    print('    7. reboot instance             8. list images')
+    print('                                   99. quit')
+    print('-----------------------------------------------------------')
     
-
-def list_instance(): #1번 기능 id list 출력
-    response = client.start_instances(
+#1번 기능 id list 출력
+def list_instance(): 
+    '''
+    response = client.describe_instances(
         InstanceIds=[
             'i-07e66349b31807962', #master
             'i-0770e98d5789bd13a', #slave
-        ],
+        ]
     )
-    for i in range(2):
-        pr = response.get('StartingInstances')[i].get('InstanceId')
-        print(pr)
-    print('\n\n')
-
-def available_zones(): #2번 기능
+    print('Listing instances....')
+    for instance in range(2):
+        imageid = response.get('Reservations')[instance].get('Instances')[0].get('ImageId')
+        id = response.get('Reservations')[instance].get('Instances')[0].get('InstanceId')
+        type = response.get('Reservations')[instance].get('Instances')[0].get('InstanceType')
+        state = response.get('Reservations')[instance].get('Instances')[0].get('State').get('Name')
+        monitoring = response.get('Reservations')[instance].get('Instances')[0].get('Monitoring').get('State')
+        print(f'[id] {id}, [AMI] {imageid}, [type] {type}, [state] {state}, [motinoring state] {monitoring}')
+    print()
+    '''
+    for instance in ec2.instances.all():
+        state = instance.state.get('Name')
+        monitoring = instance.monitoring.get('State')
+        print(f'[id]  {instance.instance_id} , [AMI]  {instance.image_id}, [type]  {instance.instance_type}, [state]  ', end='')
+        print(state, end='')
+        print(', [monitoring state]  ', end='')
+        print(monitoring)
+    print()
+    
+#2번 기능
+def available_zones(): 
     print('available zones')
     
 def start_instance(): #3번 기능 instance 시작
-    print("Which one do you want to start?\n")
-    print("1: Master & Slave     2: Slave")
-    Num = int(input())
+    idInput = input("Enter instance id: ")
+    response = client.start_instances(InstanceIds=[idInput])
+    print(f'Starting .... {idInput}')
+    print(f'Successfully started instance  {idInput}\n')
+        
+def available_regions(): #4번 기능
+    '''
+    response = client.describe_regions(RegionNames=['us-east-2'])
+    pr1 = response.get('Regions')[0].get('Endpoint')
+    pr2 = response.get('Regions')[0].get('RegionName')
+    print(f"Endpoint : {pr1}")
+    print(f"RegionName : {pr2}\n")
+    '''
+    
+    
+    
+def stop_instance(): #5번 기능 instance 중지
+    idInput = input("Enter instance id: ")
+    response = client.stop_instances(InstanceIds=[idInput])
+    print(f'Successfully stop instance  {idInput}\n')
 
-    if Num == 1:
-        response = client.start_instances(
-            InstanceIds=[
-                'i-07e66349b31807962', #master
-            ],
-        )
-        print('Done!\n\n')
-    elif Num == 2:
-        response = client.start_instances(
-            InstanceIds=[
-                'i-0770e98d5789bd13a', #slave
-            ],
-        )
-        print('Done!\n\n')
-
-def available_regions():
-    print('available regions')
-
-def stop_instance(): #5번 기능 instance 시작
-    print("Which one do you want to stop?\n")
-    print("1: Master            2: Slave")
-    Num = int(input())
-
-    if Num == 1:
-        response = client.stop_instances(
-            InstanceIds=[
-                'i-07e66349b31807962', #master
-            ],
-        )
-        print('Done!\n\n')
-    elif Num == 2:
-        response = client.stop_instances(
-            InstanceIds=[
-                'i-0770e98d5789bd13a', #slave
-            ],
-        )
-        print('Done!\n\n')
-
-def create_instance():
+def create_instance(): #6번 기능
     print('create instance')
 
-def reboot_instance():
-    print('7. reboot instance')
+def reboot_instance(): #7번 기능 instance 재부팅
+    idInput = input("Enter instance id: ")
+    response = client.reboot_instances(InstanceIds=[idInput])
+    print(f'Rebooting .... {idInput}')
+    print(f'Successfully rebooted instance  {idInput}\n')
     
-def list_images():
+def list_images(): #8번 기능
     print('list images')
 
 def exit():
@@ -105,24 +92,24 @@ def exit():
 #while(True):
 while(False):
     Main_menu()
-    Num = int(input())
-    if Num == 1:
+    Num = int(input("Enter an integer: "))
+    if Num == 1: #doneVV
         list_instance()
     elif Num == 2:
         available_zones()
-    elif Num == 3:
+    elif Num == 3: #doneVV
         start_instance()
-    elif Num == 4:
+    elif Num == 4: #done
         available_regions()
-    elif Num == 5:
+    elif Num == 5: #doneVV
         stop_instance()
     elif Num == 6:
         create_instance()
-    elif Num == 7:
+    elif Num == 7: #doneVV
         reboot_instance()
     elif Num == 8:
         list_images()
-    elif Num == 99:
+    elif Num == 99: #doneVV
         exit()
     else:
         print("Error\n")
