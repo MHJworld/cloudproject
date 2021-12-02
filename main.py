@@ -4,12 +4,6 @@ ec2 = boto3.resource('ec2')
 client = boto3.client('ec2')
 
 
-idInput = input("Enter ami id:  ")
-response = client.create_instances(InstanceIds=idInput
-                                   )
-print(f'Successfully started EC2 instance {response.id} based on AMI {idInput}\n')
-
-
 def Main_menu(): #메인 메뉴 구성
     print('-----------------------------------------------------------')
     print('    1. list instance               2. available zones')
@@ -58,7 +52,7 @@ def start_instance():
     print(f'Starting .... {idInput}')
     print(f'Successfully started instance  {idInput}\n')
 
-#4번 기능 
+#4번 기능 (안됨)
 def available_regions(): 
     '''
     response = client.describe_regions(RegionNames=['us-east-2'])
@@ -68,12 +62,19 @@ def available_regions():
     print(f"RegionName : {pr2}\n")
     '''
     available_region = client.describe_regions()
-
-    for available_region in ec2.instances.all():
-        endpoint = available_region.regions.get('Endpoint')
-        regionname = available_region.regions.get('RegionName')
-        print(endpoint, regionname)
-    #print(available_region)
+    count_num = 0
+    for i in range(100):
+        try:
+            if available_region.get('Regions')[i].get('Endpoint').find("-") != -1:
+                count_num = count_num + 1
+        except:
+            continue
+    print('Available regions ....')
+    for i in range(count_num):  
+        endpoint = available_region.get('Regions')[i].get('Endpoint')
+        regionname = available_region.get('Regions')[i].get('RegionName')
+        print(f'[region]  {regionname}, [endpoint]  {endpoint}')
+    #print(available_region) #디버깅
     
 #5번 기능 instance 중지
 def stop_instance():
@@ -83,7 +84,9 @@ def stop_instance():
 
 #6번 기능 instance 생성
 def create_instance():
-    print('create instance')
+    idInput = str(input("Enter ami id:  "))
+    response = ec2.create_instances(ImageId=idInput, MaxCount=1, MinCount=1, InstanceType='t2.micro')
+    print(f'Successfully started EC2 instance {response[0].instance_id} based on AMI {idInput}\n')
 
 #7번 기능 instance 재부팅
 def reboot_instance(): 
@@ -100,11 +103,12 @@ def list_images():
         print(', [Name] ' + image['Name'], end='')
         print(', [Owner] '+ image['OwnerId'])
 
+#99번 기능
 def exit():
     quit()
 
-while(True):
-#while(False):
+#while(True):
+while(False):
     Main_menu()
     Num = int(input("Enter an integer: "))
     if Num == 1: #doneVV
@@ -117,7 +121,7 @@ while(True):
         available_regions()
     elif Num == 5: #doneVV
         stop_instance()
-    elif Num == 6:
+    elif Num == 6: #doneVV
         create_instance()
     elif Num == 7: #doneVV
         reboot_instance()
