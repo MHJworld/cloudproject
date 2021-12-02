@@ -3,12 +3,11 @@ import boto3
 ec2 = boto3.resource('ec2')
 client = boto3.client('ec2')
 
-print('Available regions ....')
-available_region = client.describe_regions()
-for available_region in ec2.instances.all():
-    state = available_region.regions
-    print(state)
 
+idInput = input("Enter ami id:  ")
+response = client.create_instances(InstanceIds=idInput
+                                   )
+print(f'Successfully started EC2 instance {response.id} based on AMI {idInput}\n')
 
 
 def Main_menu(): #메인 메뉴 구성
@@ -51,14 +50,16 @@ def list_instance():
 #2번 기능
 def available_zones(): 
     print('available zones')
-    
-def start_instance(): #3번 기능 instance 시작
+
+#3번 기능 instance 시작
+def start_instance():
     idInput = input("Enter instance id: ")
     response = client.start_instances(InstanceIds=[idInput])
     print(f'Starting .... {idInput}')
     print(f'Successfully started instance  {idInput}\n')
-        
-def available_regions(): #4번 기능
+
+#4번 기능 
+def available_regions(): 
     '''
     response = client.describe_regions(RegionNames=['us-east-2'])
     pr1 = response.get('Regions')[0].get('Endpoint')
@@ -66,31 +67,44 @@ def available_regions(): #4번 기능
     print(f"Endpoint : {pr1}")
     print(f"RegionName : {pr2}\n")
     '''
+    available_region = client.describe_regions()
+
+    for available_region in ec2.instances.all():
+        endpoint = available_region.regions.get('Endpoint')
+        regionname = available_region.regions.get('RegionName')
+        print(endpoint, regionname)
+    #print(available_region)
     
-    
-    
-def stop_instance(): #5번 기능 instance 중지
+#5번 기능 instance 중지
+def stop_instance():
     idInput = input("Enter instance id: ")
     response = client.stop_instances(InstanceIds=[idInput])
     print(f'Successfully stop instance  {idInput}\n')
 
-def create_instance(): #6번 기능
+#6번 기능 instance 생성
+def create_instance():
     print('create instance')
 
-def reboot_instance(): #7번 기능 instance 재부팅
+#7번 기능 instance 재부팅
+def reboot_instance(): 
     idInput = input("Enter instance id: ")
     response = client.reboot_instances(InstanceIds=[idInput])
     print(f'Rebooting .... {idInput}')
     print(f'Successfully rebooted instance  {idInput}\n')
-    
-def list_images(): #8번 기능
-    print('list images')
+
+#8번 기능
+def list_images(): 
+    find_image = client.describe_images(Owners=['self'])
+    for image in find_image['Images']:
+        print('[ImageID] ' + image['ImageId'], end='')
+        print(', [Name] ' + image['Name'], end='')
+        print(', [Owner] '+ image['OwnerId'])
 
 def exit():
     quit()
 
-#while(True):
-while(False):
+while(True):
+#while(False):
     Main_menu()
     Num = int(input("Enter an integer: "))
     if Num == 1: #doneVV
@@ -99,7 +113,7 @@ while(False):
         available_zones()
     elif Num == 3: #doneVV
         start_instance()
-    elif Num == 4: #done
+    elif Num == 4: # half
         available_regions()
     elif Num == 5: #doneVV
         stop_instance()
@@ -107,7 +121,7 @@ while(False):
         create_instance()
     elif Num == 7: #doneVV
         reboot_instance()
-    elif Num == 8:
+    elif Num == 8: #doneVV
         list_images()
     elif Num == 99: #doneVV
         exit()
