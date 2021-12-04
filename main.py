@@ -3,15 +3,14 @@ import boto3
 ec2 = boto3.resource('ec2')
 client = boto3.client('ec2')
 
-
 def Main_menu(): #메인 메뉴 구성
-    print('-----------------------------------------------------------')
-    print('    1. list instance               2. available zones')
-    print('    3. start instance              4. available regions')
-    print('    5. stop instance               6. create instance')
-    print('    7. reboot instance             8. list images')
-    print('                                   99. quit')
-    print('-----------------------------------------------------------')
+    print('---------------------------------------------------------------')
+    print('      1. list instance               2. available zones')
+    print('      3. start instance              4. available regions')
+    print('      5. stop instance               6. create instance')
+    print('      7. reboot instance             8. list images')
+    print('                                     99. quit')
+    print('---------------------------------------------------------------')
     
 #1번 기능 id list 출력
 def list_instance(): 
@@ -41,9 +40,23 @@ def list_instance():
         print(monitoring)
     print()
     
-#2번 기능
+#2번 기능 zone 찾기
 def available_zones(): 
-    print('available zones')
+    available_zone = client.describe_availability_zones()
+    count_num = 0
+    for i in range(1000):
+        try:
+            if available_zone.get('AvailabilityZones')[i].get('RegionName').find("-") != -1:
+                count_num = count_num + 1
+        except:
+            continue
+    print('Available Zones ....')
+    for i in range(count_num):  
+        RegionName = available_zone.get('AvailabilityZones')[i].get('RegionName')
+        ZoneName = available_zone.get('AvailabilityZones')[i].get('ZoneName')
+        ZoneId = available_zone.get('AvailabilityZones')[i].get('ZoneId')
+        print(f'[id]  {ZoneId}, [region]  {RegionName}, [zone]  {ZoneName}')
+    #print(available_zone) #디버깅
 
 #3번 기능 instance 시작
 def start_instance():
@@ -52,7 +65,7 @@ def start_instance():
     print(f'Starting .... {idInput}')
     print(f'Successfully started instance  {idInput}\n')
 
-#4번 기능 (안됨)
+#4번 기능 regions 찾기
 def available_regions(): 
     '''
     response = client.describe_regions(RegionNames=['us-east-2'])
@@ -63,7 +76,7 @@ def available_regions():
     '''
     available_region = client.describe_regions()
     count_num = 0
-    for i in range(100):
+    for i in range(1000):
         try:
             if available_region.get('Regions')[i].get('Endpoint').find("-") != -1:
                 count_num = count_num + 1
@@ -95,39 +108,36 @@ def reboot_instance():
     print(f'Rebooting .... {idInput}')
     print(f'Successfully rebooted instance  {idInput}\n')
 
-#8번 기능
+#8번 기능 image 리스트
 def list_images(): 
     find_image = client.describe_images(Owners=['self'])
     for image in find_image['Images']:
         print('[ImageID] ' + image['ImageId'], end='')
         print(', [Name] ' + image['Name'], end='')
         print(', [Owner] '+ image['OwnerId'])
+    print()
 
-#99번 기능
-def exit():
-    quit()
-
-#while(True):
-while(False):
+#메인 메뉴 실행
+while(True):
     Main_menu()
     Num = int(input("Enter an integer: "))
-    if Num == 1: #doneVV
+    if Num == 1:
         list_instance()
     elif Num == 2:
         available_zones()
-    elif Num == 3: #doneVV
+    elif Num == 3:
         start_instance()
-    elif Num == 4: # half
+    elif Num == 4:
         available_regions()
-    elif Num == 5: #doneVV
+    elif Num == 5:
         stop_instance()
-    elif Num == 6: #doneVV
+    elif Num == 6:
         create_instance()
-    elif Num == 7: #doneVV
+    elif Num == 7:
         reboot_instance()
-    elif Num == 8: #doneVV
+    elif Num == 8:
         list_images()
-    elif Num == 99: #doneVV
-        exit()
+    elif Num == 99:
+        quit()
     else:
-        print("Error\n")
+        print("Error occur. Try again another number\n")
